@@ -1,0 +1,75 @@
+---
+
+- block:
+    - name: Disable SELinux
+      selinux: state=disabled
+      register: reboot_hint
+
+    - name: Rebooting ...
+      shell: 'sleep 5 && shutdown -r now "Reboot required for disable se linux"'
+      async: 1
+      poll: 0
+      become: true
+      ignore_errors: true
+      when: reboot_hint.reboot_required == true
+      register: rebooting
+
+    - name: Wait for instance to reboot...
+      pause: seconds=45
+      when: rebooting is changed
+
+    - name: Wait for the reboot to complete if there was a change.
+      wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 5
+        timeout: 300
+      when: rebooting is changed
+
+
+- name: Disable Firewall Deamon (firewalld)
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Change kernel parameters
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  with_dict: "{{ oracle_database_kernel_params }}"
+
+- name: save sysctl config
+  command: sysctl -p
+  ignore_errors: yes # because apparently the default centos config is invalid!
+
+- name: Find out how much system memory we have
+  set_fact:
+    system_memory: "{{ ansible_memtotal_mb }}"
+    system_memory_kb: "{{ ansible_memtotal_kb }}"
+  ignore_errors: true
+  
+- name: Add oracle user limits
+  lineinfile:
+    dest: /etc/security/limits.conf
+    line: "{{ rdbms_service_user.name }} {{ item.limit }} {{ item.type}} {{ item.value }}"
+  with_items:
+    - { limit: 'soft', type: nofile, value: '{{ oracle_database_limits_soft_no_file }}' }
+    - { limit: 'hard', type: nofile, value: '{{ oracle_database_limits_hard_no_file }}' }
+    - { limit: 'soft', type: nproc, value: '{{ oracle_database_limits_soft_nproc }}' }
+    - { limit: 'hard', type: nproc, value: '{{ oracle_database_limits_hard_nproc }}' }
+    - { limit: 'soft', type: stack, value: '{{ oracle_database_limits_soft_stack }}' }
+    - { limit: 'hard', type: stack, value: '{{ oracle_database_limits_hard_stack }}' }
+    - { limit: 'soft', type: memlock, value: '{{ oracle_database_limits_soft_memlock }}' }
+    - { limit: 'hard', type: memlock, value: '{{ oracle_database_limits_hard_memlock }}' }
+
+- name: oracle-recommended PAM config
+  lineinfile:
+    dest: /etc/pam.d/login
+    state: present
+    line: "{{ item }}"
+  with_items:
+    - "session required pam_limits.so"
+    - "session required /lib64/security/pam_limits.so"
