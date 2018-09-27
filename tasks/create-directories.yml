@@ -1,0 +1,34 @@
+---
+
+- name: Check for root directory/mount point
+  stat:
+    path: '{{ mount_point }}'
+  register: mount
+
+
+- name: Create root directory/mount point
+  file:
+    path: '{{ mount_point }}'
+    owner: "{{ mount_owner }}"
+    group: "{{ mount_group }}"
+    mode: 0775
+    state: directory
+
+  when:
+    - not unmount|default(false)
+    - mount.stat.exists == false
+
+
+- name: Prepare oracle db directories
+  file:
+    path: "{{item}}"
+    owner: "{{ rdbms_service_user.name }}"
+    group: "{{ rdbms_service_user.group }}"
+    mode: 0775
+    state: directory
+  with_items:
+    - "{{ mount_point }}"
+    - "{{ mount_point }}/software"
+    - "{{ mount_point }}/software/11gR"
+    - "{{ mount_point }}/software/11gR/patches"
+    - "/home/oracle/scripts"
