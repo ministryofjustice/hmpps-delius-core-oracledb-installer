@@ -1,0 +1,17 @@
+---
+
+- name: Get our packages from S3
+  aws_s3:
+    bucket: "{{ wl_artefact_bucket }}"
+    object: "/{{ artefact_path }}/{{ artefact.name }}"
+    dest: "{{ artefact.dest|default(mount_point + '/software/' + artefact.name) }}"
+    mode: get
+
+- name: Configure our owner and permissions
+  file:
+    path: "{{ artefact.destination|default(mount_point + '/software/' + artefact.name) }}"
+    mode: "{{ artefact.mode|default('0644') }}"
+    owner: "{{ artefact.owner|default(rdbms_service_user.name) }}"
+    group:  "{{ artefact.group|default(rdbms_service_user.group) }}"
+
+

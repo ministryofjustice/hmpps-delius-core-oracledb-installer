@@ -5,12 +5,16 @@
     file: main.yml
     name: weblogic_vars
 
+- name: Define our service user
+  set_fact:
+    rdbms_service_user: "{{ system_users[0] }}"
+
 - name: Create base directory structure
   include: create-directories.yml
-  vars:
-    - rdbms_service_user: "{{ system_users[0] }}"
 
 - name: Prepare our OS for the imminent arrival of OracleDB
   include: update-os-params.yml
-  vars:
-    - rdbms_service_user: "{{ system_users[0] }}"
+
+- name: Download and unpack oracle
+  include: install-oracledb.yml
+
