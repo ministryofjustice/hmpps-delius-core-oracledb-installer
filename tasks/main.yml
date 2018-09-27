@@ -12,3 +12,5 @@
 
 - name: Prepare our OS for the imminent arrival of OracleDB
   include: update-os-params.yml
+  vars:
+    - rdbms_service_user: "{{ system_users[0] }}"

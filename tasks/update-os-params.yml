@@ -4,12 +4,18 @@
   selinux: state=disabled
   register: reboot_hint
 
+- name: Check if Service Exists
+  stat:
+    path: /etc/init.d/firewalld
+  register: service_status
+
 - name: Disable Firewall Deamon (firewalld)
   service:
     name: firewalld
     state: stopped
     enabled: no
   ignore_errors: yes
+  when: service_status.stat.exists
 
 - name: Change kernel parameters
   sysctl:
@@ -24,7 +30,7 @@
 
 - name: Find out how much system memory we have
   set_fact:
-    system_memory_kb: "{{ (ansible_memtotal_kb/10)*9|int }}"
+    system_memory_kb: "{{ ((ansible_memtotal_mb/10)*9)*1024|int }}"
   ignore_errors: true
 
 - name: Add oracle user limits
