@@ -5,19 +5,27 @@
     path: '{{ mount_point }}'
   register: mount
 
+- block:
+    - name: Create root directory/mount point
+      file:
+        path: '{{ mount_point }}'
+        owner: "{{ mount_owner }}"
+        group: "{{ mount_group }}"
+        mode: 0775
+        state: directory
 
-- name: Create root directory/mount point
-  file:
-    path: '{{ mount_point }}'
-    owner: "{{ mount_owner }}"
-    group: "{{ mount_group }}"
-    mode: 0775
-    state: directory
+    - name: Mount volume
+      mount:
+        path: '{{ mount_point }}'
+        src: "{{ device_name|default('/dev/sdc') }}"
+        fstype: "{{ fstype|default('ext4') }}"
+        opts: 'defaults,nofail'
+        passno: 2
+        state: mounted
 
   when:
     - not unmount|default(false)
     - mount.stat.exists == false
-
 
 - name: Prepare oracle db directories
   file:
