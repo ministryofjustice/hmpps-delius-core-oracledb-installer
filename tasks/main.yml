@@ -12,9 +12,9 @@
 - name: Create base directory structure
   include: create-directories.yml
 
-- name: Prepare our OS for the imminent arrival of OracleDB
-  include: update-os-params.yml
-
-- name: Download and unpack oracle
-  include: install-oracledb.yml
+#- name: Prepare our OS for the imminent arrival of OracleDB
+#  include: update-os-params.yml
+#
+#- name: Download and unpack oracle
+#  include: install-oracledb.yml
 

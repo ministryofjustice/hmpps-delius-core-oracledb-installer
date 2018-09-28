@@ -5,67 +5,67 @@
     path: '{{ mount_point }}'
   register: mount
 
-- block:
-    - name: Create our mountpoint
-      file:
-        path: "{{ mount_point }}"
-        state: directory
-      become: true
-      ignore_errors: true
-
-    - name: Create partition
-      parted:
-       device: "{{ device_name|default('/dev/sdc') }}"
-       number: 1
-       state: present
-
-    - name: Create our filesystem
-      filesystem:
-        fstype: xfs
-        dev: "{{ device_name|default('/dev/sdc') }}"
-      become: true
-
-    - name: Remove our mapping from fstab if it exists
-      mount:
-        path: "{{ device_name|default('/dev/sdc') }}"
-        state: absent
-      become: true
-      ingore_errors: true
-
-    - name: Create our mount in fstab
-      mount:
-        path: "{{ mount_point }}"
-        src: "{{ device_name|default('/dev/sdc') }}"
-        fstype: "{{ fstype|default('xfs') }}"
-        backup: true
-        opts: 'defaults,nofail'
-        passno: 2
-        state: mounted
-      become: true
-
-    - name: Mount volume
-      mount:
-        path: '{{ mount_point }}'
-        src: "{{ device_name|default('/dev/sdc') }}"
-        fstype: "{{ fstype|default('xfs') }}"
-        opts: 'defaults,nofail'
-        passno: 2
-        state: mounted
-
-  when:
-    - not unmount|default(false)
-    - mount.stat.exists == false
-
-- name: Prepare oracle db directories
-  file:
-    path: "{{item}}"
-    owner: "{{ rdbms_service_user.name }}"
-    group: "{{ rdbms_service_user.group }}"
-    mode: 0775
-    state: directory
-  with_items:
-    - "{{ mount_point }}"
-    - "{{ mount_point }}/software"
-    - "{{ mount_point }}/software/11gR"
-    - "{{ mount_point }}/software/11gR/patches"
-    - "/home/oracle/scripts"
+#- block:
+#    - name: Create our mountpoint
+#      file:
+#        path: "{{ mount_point }}"
+#        state: directory
+#      become: true
+#      ignore_errors: true
+#
+#    - name: Create partition
+#      parted:
+#       device: "{{ device_name|default('/dev/sdc') }}"
+#       number: 1
+#       state: present
+#
+#    - name: Create our filesystem
+#      filesystem:
+#        fstype: xfs
+#        dev: "{{ device_name|default('/dev/sdc') }}"
+#      become: true
+#
+#    - name: Remove our mapping from fstab if it exists
+#      mount:
+#        path: "{{ device_name|default('/dev/sdc') }}"
+#        state: absent
+#      become: true
+#      ingore_errors: true
+#
+#    - name: Create our mount in fstab
+#      mount:
+#        path: "{{ mount_point }}"
+#        src: "{{ device_name|default('/dev/sdc') }}"
+#        fstype: "{{ fstype|default('xfs') }}"
+#        backup: true
+#        opts: 'defaults,nofail'
+#        passno: 2
+#        state: mounted
+#      become: true
+#
+#    - name: Mount volume
+#      mount:
+#        path: '{{ mount_point }}'
+#        src: "{{ device_name|default('/dev/sdc') }}"
+#        fstype: "{{ fstype|default('xfs') }}"
+#        opts: 'defaults,nofail'
+#        passno: 2
+#        state: mounted
+#
+#  when:
+#    - not unmount|default(false)
+#    - mount.stat.exists == false
+#
+#- name: Prepare oracle db directories
+#  file:
+#    path: "{{item}}"
+#    owner: "{{ rdbms_service_user.name }}"
+#    group: "{{ rdbms_service_user.group }}"
+#    mode: 0775
+#    state: directory
+#  with_items:
+#    - "{{ mount_point }}"
+#    - "{{ mount_point }}/software"
+#    - "{{ mount_point }}/software/11gR"
+#    - "{{ mount_point }}/software/11gR/patches"
+#    - "/home/oracle/scripts"
