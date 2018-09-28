@@ -2,7 +2,7 @@
 
 - name: preparing grid installation template
   template:
-    src: "{{ oracle_grid_response_file }}.rsp.j2"
+    src: "{{ role_path}}/templates/{{ oracle_grid_response_file }}.rsp.j2"
     dest: "/tmp/{{ oracle_grid_response_file }}.rsp"
 
 - name: run installer
