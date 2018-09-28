@@ -15,7 +15,7 @@
   become: yes
   become_user: "{{ rdbms_service_user.name }}"
   with_items:
-    - "{{ oracledb_artefacts[:3] }}"
+    - "{{ oracledb_artefacts }}"
 
 - name: Unpack our patches
   unarchive:
@@ -32,4 +32,4 @@
     path: "{{ mount_point }}/software/{{ item.name }}"
     state: absent
   with_items:
-    - "{{ oracledb_artefacts[:3] + oracledb_patches }}"
+    - "{{ oracledb_artefacts + oracledb_patches }}"
