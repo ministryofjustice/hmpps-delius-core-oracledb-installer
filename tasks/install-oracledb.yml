@@ -3,9 +3,15 @@
 - name: Get our software
   include: download-artefacts.yml
   with_items:
-    - "{{ oracledb_artefacts  + oracledb_patches }}"
+    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_rpms }}"
   loop_control:
     loop_var: artefact
+
+- name: Install our rpms
+  yum:
+    name: "{{ artefact.dest|default(mount_point + '/software/' + item.name) }}"
+    state: present
+  with_items: "{{ oracledb_rpms }}"
 
 - name: Unpack main software
   unarchive:
@@ -27,9 +33,9 @@
   with_items:
     - "{{ oracledb_patches }}"
 
-- name: Remove our zips
+- name: Remove our downloaded archives
   file:
     path: "{{ mount_point }}/software/{{ item.name }}"
     state: absent
   with_items:
-    - "{{ oracledb_artefacts + oracledb_patches }}"
+    - "{{ oracledb_artefacts + oracledb_patches + oracledb_rpms }}"

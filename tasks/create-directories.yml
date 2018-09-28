@@ -68,4 +68,5 @@
     - "{{ mount_point }}/software"
     - "{{ mount_point }}/software/11gR"
     - "{{ mount_point }}/software/11gR/patches"
+    - "{{ mount_point }}/software/11gR/rpm"
     - "/home/oracle/scripts"
