@@ -1,0 +1,32 @@
+---
+
+- name: preparing grid installation template
+  template:
+    src: "{{ oracle_grid_response_file }}.rsp.j2"
+    dest: "/tmp/{{ oracle_grid_response_file }}.rsp"
+
+- name: run installer
+  shell: "{{ oracle_grid_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_grid_response_file }}.rsp"
+  args:
+    creates: "{{ oracle_grid_oracle_home }}/bin/sqlplus"
+  become: yes
+  become_user: oracle
+  register: command_result
+  failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
+
+- name: apply grid patch 18370031
+  shell: "{{ oracle_grid_oracle_home }}/OPatch/opatch napply -oh {{ oracle_grid_oracle_home }} -local {{ oracle_patch_installer_directory }}/18370031 -silent"
+  become: yes
+  become_user: oracle
+  register: patch_result
+  failed_when: "'OPatch succeeded.' not in patch_result.stdout_lines"
+
+- name: run grid post-installation scripts as root
+  become: yes
+  become_user: root
+  shell: "{{item}}"
+  with_items:
+    - "{{ oracle_database_inventory_location }}/orainstRoot.sh"
+    - "{{ oracle_grid_oracle_home }}/root.sh"
+  register: root_result
+  failed_when: root_result.stderr_lines == ""

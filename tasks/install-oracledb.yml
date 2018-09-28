@@ -9,7 +9,7 @@
 
 - name: Install our rpms
   yum:
-    name: "{{ artefact.dest|default(mount_point + '/software/' + item.name) }}"
+    name: "{{ item.dest|default(mount_point + '/software/' + item.name) }}"
     state: present
   with_items: "{{ oracledb_rpms }}"
 
@@ -32,6 +32,9 @@
   become_user: "{{ rdbms_service_user.name }}"
   with_items:
     - "{{ oracledb_patches }}"
+
+- name: Install Oracle Grid with defaults in template
+  include: install-grid.yml
 
 - name: Remove our downloaded archives
   file:

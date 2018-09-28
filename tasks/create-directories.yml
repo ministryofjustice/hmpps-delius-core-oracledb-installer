@@ -65,8 +65,4 @@
     state: directory
   with_items:
     - "{{ mount_point }}"
-    - "{{ mount_point }}/software"
-    - "{{ mount_point }}/software/11gR"
-    - "{{ mount_point }}/software/11gR/patches"
-    - "{{ mount_point }}/software/11gR/rpm"
-    - "/home/oracle/scripts"
+    - "{{ oracle_patch_installer_directory }}"
