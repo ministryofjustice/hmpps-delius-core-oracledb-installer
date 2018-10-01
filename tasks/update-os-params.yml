@@ -1,0 +1,57 @@
+---
+
+- name: Disable SELinux
+  selinux: state=disabled
+  register: reboot_hint
+
+- name: Check if Service Exists
+  stat:
+    path: /etc/init.d/firewalld
+  register: service_status
+
+- name: Disable Firewall Deamon (firewalld)
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: service_status.stat.exists
+
+- name: Change kernel parameters
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  with_dict: "{{ oracle_database_kernel_params }}"
+
+- name: save sysctl config
+  command: sysctl -p
+  ignore_errors: yes # because apparently the default centos config is invalid!
+
+- name: Find out how much system memory we have
+  set_fact:
+    system_memory_kb: "{{ ((ansible_memtotal_mb/10)*9)*1024|int }}"
+  ignore_errors: true
+
+- name: Add oracle user limits
+  lineinfile:
+    dest: /etc/security/limits.conf
+    line: "{{ rdbms_service_user.name }} {{ item.limit }} {{ item.type}} {{ item.value }}"
+  with_items:
+    - { limit: 'soft', type: nofile, value: '{{ oracle_database_limits_soft_no_file }}' }
+    - { limit: 'hard', type: nofile, value: '{{ oracle_database_limits_hard_no_file }}' }
+    - { limit: 'soft', type: nproc, value: '{{ oracle_database_limits_soft_nproc }}' }
+    - { limit: 'hard', type: nproc, value: '{{ oracle_database_limits_hard_nproc }}' }
+    - { limit: 'soft', type: stack, value: '{{ oracle_database_limits_soft_stack }}' }
+    - { limit: 'hard', type: stack, value: '{{ oracle_database_limits_hard_stack }}' }
+    - { limit: 'soft', type: memlock, value: '{{ system_memory_kb|int }}' }
+    - { limit: 'hard', type: memlock, value: '{{ system_memory_kb|int }}' }
+
+- name: oracle-recommended PAM config
+  lineinfile:
+    dest: /etc/pam.d/login
+    state: present
+    line: "{{ item }}"
+  with_items:
+    - "session required pam_limits.so"
+    - "session required /lib64/security/pam_limits.so"

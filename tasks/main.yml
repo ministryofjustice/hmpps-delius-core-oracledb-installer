@@ -1,2 +1,20 @@
 ---
-# tasks file for hmpps-delius-core-oracledb-installer
+
+- name: Load in our vars
+  include_vars:
+    file: main.yml
+    name: weblogic_vars
+
+- name: Define our service user
+  set_fact:
+    rdbms_service_user: "{{ system_users[0] }}"
+
+- name: Create base directory structure
+  include: create-directories.yml
+
+- name: Prepare our OS for the imminent arrival of OracleDB
+  include: update-os-params.yml
+
+- name: Download and unpack oracle
+  include: install-oracledb.yml
+

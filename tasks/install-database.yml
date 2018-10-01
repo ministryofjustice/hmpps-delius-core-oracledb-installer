@@ -1,0 +1,42 @@
+---
+
+- name: preparing database installation template
+  template:
+    src: "{{ role_path}}/templates/{{ oracle_database_response_file }}.rsp.j2"
+    dest: "/tmp/{{ oracle_database_response_file }}.rsp"
+
+- name: run installer
+  shell: "{{ oracle_database_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_database_response_file }}.rsp"
+  args:
+    creates: "{{ oracle_database_oracle_home }}/bin/sqlplus"
+  become: yes
+  become_user: oracle
+  register: command_result
+  failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
+
+- name: run post-installation scripts as root
+  shell: "{{item}}"
+  become: yes
+  become_user: root
+  with_items:
+    - "{{ oracle_database_inventory_location }}/orainstRoot.sh"
+    - "{{ oracle_database_oracle_home }}/root.sh"
+  register: root_result
+  failed_when: root_result.stderr_lines == ""
+
+- name: set oracle home
+  lineinfile:
+   dest: "/home/oracle/.bash_profile"
+   regexp: "{{ item.regexp }}"
+   line: "{{ item.line }}"
+   insertbefore: "export PATH"
+  with_items:
+    -
+      regexp: ^ORACLE_HOME=
+      line: "ORACLE_HOME={{ oracle_database_oracle_home }}"
+    -
+      regexp: PATH=\$ORACLE_HOME/bin
+      line: PATH=$ORACLE_HOME/bin:$PATH
+    -
+      regexp: ^export ORACLE_HOME
+      line: export ORACLE_HOME
