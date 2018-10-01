@@ -36,6 +36,9 @@
 - name: Install Oracle Grid with defaults in template
   include: install-grid.yml
 
+- name: Install Oracle DB software
+  include: install-database.yml
+
 - name: Remove our downloaded archives
   file:
     path: "{{ mount_point }}/software/{{ item.name }}"
