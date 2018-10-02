@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# --------
+# Main
+# --------
+/usr/sbin/oracleasm configure -u {{ rdbms_service_user.name }} -g {{ rdbms_service_user.group }} -b -s y -e
+
+let diskno=0
+fdisk -l | grep ^Disk\ /dev | grep -v mapper | cut -d' ' -f2 | cut -d: -f1 | while read diskfullname
+do
+  diskname=`echo $diskfullname | awk -F"/" '{print $NF}'`
+  # check if disk/partition is mounted
+  mount | grep "$diskfullname" > /dev/null
+  if [ $? -ne 0 ]
+  then
+    # Check if partition exists
+    lsblk | grep "${diskname}[1-9]" > /dev/null
+    if [ $? -ne 0 ]
+    then	    
+      # Create on full partition
+      echo -e 'o\nn\np\n1\n\n\nw' | fdisk $diskfullname
+      sync
+    fi
+    # check if it is a asm disk
+    diskno=`expr ${diskno} + 1`
+    /usr/sbin/oracleasm querydisk ${diskfullname}1 | grep "marked an ASM disk" > /dev/null
+    if [ $? -ne 0 ]
+    then
+      /usr/sbin/oracleasm createdisk ASMDISK$diskno ${diskfullname}1
+    fi
+  fi
+done
+
+# Restart oracleasm
+oracleasm init

@@ -45,3 +45,12 @@
     state: absent
   with_items:
     - "{{ oracledb_artefacts + oracledb_patches + oracledb_rpms }}"
+
+- name: Ensure our asm discovery template is on the system in roots home directory and is executable
+  template:
+    src: "{{ role_path }}/templates/discover-asm-disks.sh.j2"
+    dest: "~/discover-asm-disks.sh"
+    mode: u+x
+  become: true
+
+
