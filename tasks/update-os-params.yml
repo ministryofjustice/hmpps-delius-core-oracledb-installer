@@ -55,3 +55,21 @@
   with_items:
     - "session required pam_limits.so"
     - "session required /lib64/security/pam_limits.so"
+
+- name: preparing hugepages template
+  file:
+    src: "{{ role_path }}/files/hugepages.sh.j2"
+    dest: /tmp/hugepages.sh
+    mode: u+x
+
+- name: find hugepages size
+  shell: "/tmp/hugepages.sh"
+  register: hugepage_result
+  failed_when:  hugepage_result.rc != 0
+
+- name: configure kernel for hugepages
+  sysctl:
+    name: "vm.nr_hugepages"
+    value: "{{ hugepage_result.stdout }}"
+    state: present
+  when: hugepage_result.rc == 0
