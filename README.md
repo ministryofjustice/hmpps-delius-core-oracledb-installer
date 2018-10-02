@@ -172,6 +172,7 @@ Before starting the services
     ```
  - Set the grid hostname to the actual instance IP and not localhost
  - set the oracle_db hostname to the instance IP and not localhost
+ - the discover-asm-disks.sh file is located in `/root/` as `/tmp` is volatile
  
 License
 -------
