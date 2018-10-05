@@ -41,10 +41,12 @@
 
 - name: Remove our downloaded archives
   file:
-    path: "{{ mount_point }}/software/{{ item.name }}"
+    path: "{{ artefact.dest|default( mount_point + '/software/' + artefact.name) }}"
     state: absent
   with_items:
-    - "{{ oracledb_artefacts + oracledb_patches + oracledb_rpms }}"
+    - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms) }}"
+  loop_control:
+    loop_var: artefact
 
 - name: Ensure our asm discovery template is on the system in roots home directory and is executable
   template:

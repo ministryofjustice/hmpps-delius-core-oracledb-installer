@@ -1,10 +1,26 @@
 ---
 
+- block:
+    - name: Set our download path
+      set_fact:
+          download_path: "{{ [ artefact.dest_path, artefact.name ]|join('/') }}"
+  when: artefact.dest|default(false)
+
+- block:
+    - name: Set our download path
+      set_fact:
+          download_path: "{{ [mount_point, 'software',  artefact.name]|join('/')  }}"
+  when: artefact.dest|default(false) == false
+
+- name: Print out our download path
+  debug:
+    msg: "{{ download_path }}"
+
 - name: Get our packages from S3
   aws_s3:
     bucket: "{{ wl_artefact_bucket }}"
     object: "/{{ artefact_path }}/{{ artefact.name }}"
-    dest: "{{ artefact.dest|default(mount_point + '/software/' + artefact.name) }}"
+    dest: "{{ download_path }}"
     mode: get
 
 - name: Configure our owner and permissions
