@@ -30,7 +30,7 @@
         path: "{{ device_name|default('/dev/xvdc') }}"
         state: absent
       become: true
-      ingore_errors: true
+      ignore_errors: true
 
     - name: Create our mount in fstab
       mount:
