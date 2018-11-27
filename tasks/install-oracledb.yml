@@ -23,15 +23,15 @@
   with_items:
     - "{{ oracledb_artefacts }}"
 
-#- name: Unpack our patches
-#  unarchive:
-#    src: "{{ mount_point }}/software/{{ item.name }}"
-#    dest: "{{ mount_point }}/software/11gR/patches"
-#    remote_src: yes
-#  become: yes
-#  become_user: "{{ rdbms_service_user.name }}"
-#  with_items:
-#    - "{{ oracledb_patches }}"
+- name: Unpack our patches
+  unarchive:
+    src: "{{ mount_point }}/software/{{ item.name }}"
+    dest: "{{ mount_point }}/software/11gR/patches"
+    remote_src: yes
+  become: yes
+  become_user: "{{ rdbms_service_user.name }}"
+  with_items:
+    - "{{ oracledb_patches }}"
 
 - name: Install Oracle Grid with defaults in template
   include: install-grid.yml
