@@ -1,5 +1,14 @@
 ---
 
+- name: Disable selinux for this run
+  command: setenforce 0
+  become: true
+
+- name: Disable selinux permanently
+  selinux:
+    state: disabled
+  become: true
+
 - name: validate oracle grid is already installed
   stat:
     path: "{{ oracle_grid_oracle_home }}/bin/sqlplus"
