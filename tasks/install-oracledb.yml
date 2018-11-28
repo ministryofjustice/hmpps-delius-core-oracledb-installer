@@ -3,7 +3,7 @@
 - name: Get our software
   include: download-artefacts.yml
   with_items:
-    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_rpms }}"
+    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_post_patches + oracledb_rpms }}"
   loop_control:
     loop_var: artefact
 
@@ -44,8 +44,7 @@
     path: "{{ artefact.dest|default( mount_point + '/software/' + artefact.name) }}"
     state: absent
   with_items:
-    - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_rpms) }}"
-#    - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms) }}"
+    - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms) }}"
   loop_control:
     loop_var: artefact
 
@@ -55,5 +54,3 @@
     dest: "~/discover-asm-disks.sh"
     mode: u+x
   become: true
-
-
