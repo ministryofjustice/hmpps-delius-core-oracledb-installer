@@ -25,7 +25,7 @@
 
 - name: Configure our owner and permissions
   file:
-    path: "{{ artefact.destination|default(mount_point + '/software/' + artefact.name) }}"
+    path: "{{ artefact.dest_path|default(mount_point + '/software/' + artefact.name) }}"
     mode: "{{ artefact.mode|default('0644') }}"
     owner: "{{ artefact.owner|default(rdbms_service_user.name) }}"
     group:  "{{ artefact.group|default(rdbms_service_user.group) }}"
