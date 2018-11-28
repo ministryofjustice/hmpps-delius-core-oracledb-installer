@@ -58,11 +58,17 @@
 
 - name: Prepare oracle db directories
   file:
-    path: "{{item}}"
+    path: "{{ item }}"
     owner: "{{ rdbms_service_user.name }}"
     group: "{{ rdbms_service_user.group }}"
     mode: 0775
     state: directory
+  with_items:
+    - "{{ mount_point }}"
+    - "{{ oracle_patch_installer_directory }}"
+
+- name: Get our directory permissions
+  command: "ls -ltr {{ item }}"
   with_items:
     - "{{ mount_point }}"
     - "{{ oracle_patch_installer_directory }}"
