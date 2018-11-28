@@ -58,7 +58,7 @@
 
 - name: Prepare oracle db directories
   file:
-    path: "{{item}}"
+    path: "{{ item }}"
     owner: "{{ rdbms_service_user.name }}"
     group: "{{ rdbms_service_user.group }}"
     mode: 0775

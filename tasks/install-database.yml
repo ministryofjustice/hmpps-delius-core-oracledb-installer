@@ -15,7 +15,7 @@
   failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
 
 - name: run post-installation scripts as root
-  shell: "{{item}}"
+  shell: "{{ item }}"
   become: yes
   become_user: root
   with_items:
