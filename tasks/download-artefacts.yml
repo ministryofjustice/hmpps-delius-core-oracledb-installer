@@ -4,13 +4,13 @@
     - name: Set our download path
       set_fact:
           download_path: "{{ [ artefact.dest_path, artefact.name ]|join('/') }}"
-  when: artefact.dest|default(false)
+  when: artefact.dest_path|default(false)
 
 - block:
     - name: Set our download path
       set_fact:
           download_path: "{{ [mount_point, 'software',  artefact.name]|join('/')  }}"
-  when: artefact.dest|default(false) == false
+  when: artefact.dest_path|default(false) == false
 
 - name: Print out our download path
   debug:
