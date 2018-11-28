@@ -32,7 +32,4 @@
     state: directory
     recurse: true
 
-- name: List our downloads path
-  command: "ls -ltr {{ download_path }}"
-
 
