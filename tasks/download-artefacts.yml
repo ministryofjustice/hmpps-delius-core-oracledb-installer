@@ -26,8 +26,12 @@
 - name: Configure our owner and permissions
   file:
     path: "{{ artefact.dest_path|default(mount_point + '/software/' + artefact.name) }}"
-    mode: "{{ artefact.mode|default('0644') }}"
+    mode: "{{ artefact.mode|default('0775') }}"
     owner: "{{ artefact.owner|default(rdbms_service_user.name) }}"
     group:  "{{ artefact.group|default(rdbms_service_user.group) }}"
+    recurse: true
+
+- name: List our downloads path
+  command: "ls -ltr {{ download_path }}"
 
 
