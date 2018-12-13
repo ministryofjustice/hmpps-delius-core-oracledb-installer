@@ -9,6 +9,8 @@ let diskno=0
 fdisk -l | grep ^Disk\ /dev | grep -v mapper | cut -d' ' -f2 | cut -d: -f1 | while read diskfullname
 do
   diskname=`echo $diskfullname | awk -F"/" '{print $NF}'`
+  echo $diskfullname
+  echo $diskname
   # check if disk/partition is mounted
   mount | grep "$diskfullname" > /dev/null
   if [ $? -ne 0 ]
@@ -16,17 +18,28 @@ do
     # Check if partition exists
     lsblk | grep "${diskname}[1-9]" > /dev/null
     if [ $? -ne 0 ]
-    then	    
+    then
       # Create on full partition
       echo -e 'o\nn\np\n1\n\n\nw' | fdisk $diskfullname
       sync
     fi
-    # check if it is a asm disk
-    diskno=`expr ${diskno} + 1`
-    /usr/sbin/oracleasm querydisk ${diskfullname}1 | grep "marked an ASM disk" > /dev/null
+
+    # check partion suffix
+    lsblk | grep ${diskname}p1 > /dev/null
     if [ $? -ne 0 ]
     then
-      /usr/sbin/oracleasm createdisk ASMDISK$diskno ${diskfullname}1
+      partname="${diskfullname}1"
+    else
+      partname="${diskfullname}p1"
+    fi
+
+    # check if it is a asm disk
+    diskno=`expr ${diskno} + 1`
+    /usr/sbin/oracleasm querydisk ${partname} | grep "marked an ASM disk" > /dev/null
+    if [ $? -ne 0 ]
+    then
+      /usr/sbin/oracleasm createdisk ASMDISK$diskno ${partname}
+      /usr/sbin/oracleasm scandisks
     fi
   fi
 done
