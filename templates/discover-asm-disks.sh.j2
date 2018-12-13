@@ -25,16 +25,19 @@ do
     fi
 
     # check partion suffix
-    lsblk | grep ${diskname}p1 > /dev/null
+    lsblk | grep "${diskname}p1" > /dev/null 2>&1
     if [ $? -ne 0 ]
     then
       partname="${diskfullname}1"
+      echo $partname
     else
       partname="${diskfullname}p1"
+      echo $partname
     fi
 
     # check if it is a asm disk
     diskno=`expr ${diskno} + 1`
+    /usr/sbin/oracleasm querydisk ${partname}
     /usr/sbin/oracleasm querydisk ${partname} | grep "marked an ASM disk" > /dev/null
     if [ $? -ne 0 ]
     then
