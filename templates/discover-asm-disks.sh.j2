@@ -3,7 +3,12 @@
 # --------
 # Main
 # --------
-/usr/sbin/oracleasm configure -u {{ rdbms_service_user.name }} -g {{ rdbms_service_user.group }} -b -s y -e
+# Configure ASMLib
+/usr/sbin/oracleasm configure -u oracle -g oinstall -b -s y -e
+
+# Check status and load ASMLib
+/usr/sbin/oracleasm status > /dev/null 2>&1
+[ $? -ne 0 ] && /usr/sbin/oracleasm init
 
 let diskno=0
 fdisk -l | grep ^Disk\ /dev | grep -v mapper | cut -d' ' -f2 | cut -d: -f1 | while read diskfullname
@@ -45,7 +50,5 @@ do
       /usr/sbin/oracleasm scandisks
     fi
   fi
-done
 
-# Restart oracleasm
-oracleasm init
+done
