@@ -5,8 +5,21 @@
     src: "{{ role_path}}/templates/{{ oracle_grid_response_file }}.rsp.j2"
     dest: "/tmp/{{ oracle_grid_response_file }}.rsp"
 
-- name: run installer
-  shell: "{{ oracle_grid_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_grid_response_file }}.rsp"
+- name: Prepare log directories
+  file:
+    path: "/tmp/grid_logs"
+    mode: 0775
+    state: directory
+- name: Copy log catcher script in case of failure
+  copy:
+    src: "{{ role_path }}/files/grid_log_catcher.sh"
+    dest: "/tmp/grid_log_catcher.sh"
+    owner: "{{ rdbms_service_user.name }}"
+    group: "{{ rdbms_service_user.group }}"
+    mode: 0775
+    remote_src: true
+- name: run grid installer
+  shell: "/tmp/grid_log_catcher.sh & {{ oracle_grid_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_grid_response_file }}.rsp"
   args:
     creates: "{{ oracle_grid_oracle_home }}/bin/sqlplus"
   become: yes
