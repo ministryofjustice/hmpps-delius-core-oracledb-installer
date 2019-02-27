@@ -1,60 +1,60 @@
 ---
 
-# - name: Check for root directory/mount point
-#   stat:
-#     path: '{{ mount_point }}'
-#   register: mount
-#
-# - block:
-#     - name: Create our mountpoint
-#       file:
-#         path: "{{ mount_point }}"
-#         state: directory
-#       become: true
-#       ignore_errors: true
-#
-#     - name: Create partition
-#       parted:
-#        device: "{{ device_name|default('/dev/xvdc') }}"
-#        number: 1
-#        state: present
-#
-#     - name: Create our filesystem
-#       filesystem:
-#         fstype: xfs
-#         dev: "{{ device_name|default('/dev/xvdc') }}"
-#       become: true
-#
-#     - name: Remove our mapping from fstab if it exists
-#       mount:
-#         path: "{{ device_name|default('/dev/xvdc') }}"
-#         state: absent
-#       become: true
-#       ignore_errors: true
-#
-#     - name: Create our mount in fstab
-#       mount:
-#         path: "{{ mount_point }}"
-#         src: "{{ device_name|default('/dev/xvdc') }}"
-#         fstype: "{{ fstype|default('xfs') }}"
-#         backup: true
-#         opts: 'defaults,nofail'
-#         passno: 2
-#         state: mounted
-#       become: true
-#
-#     - name: Mount volume
-#       mount:
-#         path: '{{ mount_point }}'
-#         src: "{{ device_name|default('/dev/xvdc') }}"
-#         fstype: "{{ fstype|default('xfs') }}"
-#         opts: 'defaults,nofail'
-#         passno: 2
-#         state: mounted
-#
-#   when:
-#     - not unmount|default(false)
-#     - mount.stat.exists == false
+- name: Check for root directory/mount point
+  stat:
+    path: '{{ mount_point }}'
+  register: mount
+
+- block:
+    - name: Create our mountpoint
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+      become: true
+      ignore_errors: true
+
+    - name: Create partition
+      parted:
+       device: "{{ device_name|default('/dev/xvdc') }}"
+       number: 1
+       state: present
+
+    - name: Create our filesystem
+      filesystem:
+        fstype: xfs
+        dev: "{{ device_name|default('/dev/xvdc') }}"
+      become: true
+
+    - name: Remove our mapping from fstab if it exists
+      mount:
+        path: "{{ device_name|default('/dev/xvdc') }}"
+        state: absent
+      become: true
+      ignore_errors: true
+
+    - name: Create our mount in fstab
+      mount:
+        path: "{{ mount_point }}"
+        src: "{{ device_name|default('/dev/xvdc') }}"
+        fstype: "{{ fstype|default('xfs') }}"
+        backup: true
+        opts: 'defaults,nofail'
+        passno: 2
+        state: mounted
+      become: true
+
+    - name: Mount volume
+      mount:
+        path: '{{ mount_point }}'
+        src: "{{ device_name|default('/dev/xvdc') }}"
+        fstype: "{{ fstype|default('xfs') }}"
+        opts: 'defaults,nofail'
+        passno: 2
+        state: mounted
+
+  when:
+    - not unmount|default(false)
+    - mount.stat.exists == false
 
 - name: Prepare oracle db directories
   file:
