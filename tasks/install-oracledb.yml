@@ -49,10 +49,3 @@
     - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms) }}"
   loop_control:
     loop_var: artefact
-
-- name: Ensure our asm discovery template is on the system in roots home directory and is executable
-  template:
-    src: "{{ role_path }}/templates/discover-asm-disks.sh.j2"
-    dest: "~/discover-asm-disks.sh"
-    mode: u+x
-  become: true
