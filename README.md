@@ -75,6 +75,7 @@ database_memorylimit: "1000"
 oracle_database_installer_directory: "{{ mount_point }}/software/11gR/database"
 oracle_grid_installer_directory: "{{ mount_point }}/software/11gR/grid"
 oracle_patch_installer_directory: "{{ mount_point }}/software/11gR/patches"
+oracle_osbws_installer_directory: "{{ mount_point }}/software/11gR/osbws"
 oracle_database_response_file: "db"
 oracle_grid_response_file: "grid"
 
@@ -140,13 +141,16 @@ oracledb_patches:
 oracledb_rpms:
   - name: 'oracleasm-support-2.1.11-2.el7.x86_64.rpm'
   - name: 'oracleasmlib-2.0.12-1.el7.x86_64.rpm'
+
+oracledb_osbws:
+  - name: 'osbws_install_12.2.0.1.0.jar'
 ```
 Dependencies
 ------------
 
  - https://github.com/ministryofjustice/hmpps-ansible-packages.git # For package management
  - https://github.com/ministryofjustice/hmpps-delius-core-system-user.git #Manages sytem user and group creation
- 
+
 Example Playbook
 ----------------
 
@@ -173,7 +177,7 @@ Before starting the services
  - Set the grid hostname to the actual instance IP and not localhost
  - set the oracle_db hostname to the instance IP and not localhost
  - the discover-asm-disks.sh file is located in `/root/` as `/tmp` is volatile
- 
+
 License
 -------
 

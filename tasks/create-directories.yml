@@ -66,3 +66,4 @@
   with_items:
     - "{{ mount_point }}"
     - "{{ oracle_patch_installer_directory }}"
+    - "{{ oracle_osbws_installer_directory }}"
