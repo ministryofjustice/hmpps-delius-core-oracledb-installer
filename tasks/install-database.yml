@@ -24,19 +24,19 @@
   register: root_result
   failed_when: root_result.stderr_lines == ""
 
-- name: set oracle home
-  lineinfile:
-   dest: "/home/oracle/.bash_profile"
-   regexp: "{{ item.regexp }}"
-   line: "{{ item.line }}"
-   insertbefore: "export PATH"
-  with_items:
-    -
-      regexp: ^ORACLE_HOME=
-      line: "ORACLE_HOME={{ oracle_database_oracle_home }}"
-    -
-      regexp: PATH=\$ORACLE_HOME/bin
-      line: PATH=$ORACLE_HOME/bin:$PATH
-    -
-      regexp: ^export ORACLE_HOME
-      line: export ORACLE_HOME
+# - name: set oracle home
+#   lineinfile:
+#    dest: "/home/oracle/.bash_profile"
+#    regexp: "{{ item.regexp }}"
+#    line: "{{ item.line }}"
+#    insertbefore: "export PATH"
+#   with_items:
+#     -
+#       regexp: ^ORACLE_HOME=
+#       line: "ORACLE_HOME={{ oracle_database_oracle_home }}"
+#     -
+#       regexp: PATH=\$ORACLE_HOME/bin
+#       line: PATH=$ORACLE_HOME/bin:$PATH
+#     -
+#       regexp: ^export ORACLE_HOME
+#       line: export ORACLE_HOME
