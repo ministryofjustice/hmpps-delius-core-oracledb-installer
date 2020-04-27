@@ -1,9 +1,9 @@
 ---
 
-- name: Get our software
+- name: Get our software 
   include: download-artefacts.yml
   with_items:
-    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_post_patches + oracledb_rpms + oracledb_osbws }}"
+    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_post_patches + oracledb_rpms + oracledb_osbws }} + {{ oraclegrid_artefact | default() }} + {{ oraclegrid_patches | default() }}"
   loop_control:
     loop_var: artefact
 
@@ -13,25 +13,8 @@
     state: present
   with_items: "{{ oracledb_rpms }}"
 
-- name: Unpack main software
-  unarchive:
-    src: "{{ mount_point }}/software/{{ item.name }}"
-    dest: "{{ mount_point }}/software/11gR"
-    remote_src: yes
-  become: yes
-  become_user: "{{ rdbms_service_user.name }}"
-  with_items:
-    - "{{ oracledb_artefacts }}"
-
-- name: Unpack our patches
-  unarchive:
-    src: "{{ item.dest_path|default(mount_point +'/software') + '/' + item.name }}"
-    dest: "{{ mount_point }}/software/11gR/patches"
-    remote_src: yes
-  become: yes
-  become_user: "{{ rdbms_service_user.name }}"
-  with_items:
-    - "{{ oracledb_patches }}"
+- name: Unpack software
+  include: unpack-software.yml
 
 - name: Install Oracle Grid with defaults in template
   include: install-grid.yml
@@ -42,7 +25,7 @@
 - name: Install Oracle Secure Backup Web Service software
   copy:
     src: "{{ mount_point }}/software/{{ item.name }}"
-    dest: "{{ mount_point }}/software/11gR/osbws/osbws_install.jar"
+    dest: "{{ oracle_osbws_installer_directory }}/osbws_install.jar"
     remote_src: yes
   become: yes
   become_user: "{{ rdbms_service_user.name }}"
@@ -59,3 +42,4 @@
     - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms + oracledb_osbws) }}"
   loop_control:
     loop_var: artefact
+  tags: remove
