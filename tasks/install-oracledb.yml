@@ -3,7 +3,7 @@
 - name: Get our software 
   include: download-artefacts.yml
   with_items:
-    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_post_patches + oracledb_rpms + oracledb_osbws }} + {{ oraclegrid_artefact | default() }} + {{ oraclegrid_patches | default() }}"
+    - "{{ oracledb_artefacts  + oracledb_patches + oracledb_post_patches + oracledb_rpms + oracledb_osbws }} + {{ oraclegrid_artefacts | default([]) }} + {{ oraclegrid_patches | default([]) }}"
   loop_control:
     loop_var: artefact
 
