@@ -5,10 +5,20 @@
     file: main.yml
     name: weblogic_vars
 
+- name: Set default fact grid version to 11g
+  set_fact:
+    grid_version: "11g"
+  when: db_version is not defined
+
+- name: Set fact grid version to 19c depending on db version to be installed
+  set_fact:
+    grid_version: "19c"
+  when: (db_version is defined) and (db_version == '11g' or db_version == '18c' or db_version == '19c')
+
 - name: Confirm we are installing on a blank slate
   include: check-installation.yml
   no_log: true
-
+  
 - block:
     - name: Define our service user
       set_fact:
