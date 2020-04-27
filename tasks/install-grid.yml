@@ -21,7 +21,7 @@
     owner: "{{ rdbms_service_user.name }}"
     group: "{{ rdbms_service_user.group }}"
     mode: 0775
-    remote_src: false
+    remote_src: true
 
 - block:
 
