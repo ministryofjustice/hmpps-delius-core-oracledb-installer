@@ -5,11 +5,15 @@
     src: "{{ role_path}}/templates/{{ oracle_grid_response_file }}.rsp.j2"
     dest: "/tmp/{{ oracle_grid_response_file }}.rsp"
 
+- debug:
+    msg: "Installing grid {{ grid_version }}"
+
 - name: Prepare log directories
   file:
     path: "/tmp/grid_logs"
     mode: 0775
     state: directory
+
 - name: Copy log catcher script in case of failure
   copy:
     src: "{{ role_path }}/files/grid_log_catcher.sh"
@@ -17,22 +21,39 @@
     owner: "{{ rdbms_service_user.name }}"
     group: "{{ rdbms_service_user.group }}"
     mode: 0775
-    remote_src: true
-- name: run grid installer
-  shell: "/tmp/grid_log_catcher.sh & {{ oracle_grid_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_grid_response_file }}.rsp"
-  args:
-    creates: "{{ oracle_grid_oracle_home }}/bin/sqlplus"
-  become: yes
-  become_user: oracle
-  register: command_result
-  failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
+    remote_src: false
 
-- name: apply grid patch 18370031
-  shell: "{{ oracle_grid_oracle_home }}/OPatch/opatch napply -oh {{ oracle_grid_oracle_home }} -local {{ oracle_patch_installer_directory }}/18370031 -silent"
-  become: yes
-  become_user: oracle
-  register: patch_result
-  failed_when: "'OPatch succeeded.' not in patch_result.stdout_lines"
+- block:
+
+    - name: run grid installer for 11g grid
+      shell: "/tmp/grid_log_catcher.sh & {{ oracle_grid_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_grid_response_file }}.rsp"
+      args:
+        creates: "{{ oracle_grid_oracle_home }}/bin/sqlplus"
+      become: yes
+      become_user:  "{{ rdbms_service_user.name }}"
+      register: command_result
+      failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
+
+    - name: apply grid patch 18370031 for 11g grid
+      shell: "{{ oracle_grid_oracle_home }}/OPatch/opatch napply -oh {{ oracle_grid_oracle_home }} -local {{ oracle_patch_installer_directory }}/18370031 -silent"
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      register: patch_result
+      failed_when: "'OPatch succeeded.' not in patch_result.stdout_lines"
+      
+  when: grid_version == '11g'
+
+- block:
+
+    - name: Run grid setup and apply release update 30899722 for 19c grid
+      shell: "{{ oracle_grid_oracle_home }}/gridSetup.sh -silent -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_grid_response_file }}.rsp -applyRU {{ oracle_grid_installer_directory }}/30899722"
+      become: yes
+      become_user:  "{{ rdbms_service_user.name }}"
+      register: command_result
+      failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines and 'OPatchAuto successful.' not in command_result.stdout_lines"
+      ignore_errors: yes
+
+  when: grid_version == '19c'
 
 - name: run grid post-installation scripts as root
   become: yes
@@ -42,4 +63,4 @@
     - "{{ oracle_database_inventory_location }}/orainstRoot.sh"
     - "{{ oracle_grid_oracle_home }}/root.sh"
   register: root_result
-  failed_when: root_result.stderr_lines == ""
+  failed_when: root_result.stderr_lines == "" and root_result.rc != 0
