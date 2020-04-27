@@ -1,0 +1,116 @@
+
+- name: Unpack all 11g software
+  block:
+
+    - name: Unpack 11g database and 11g grid software
+      unarchive:
+        src: "{{ mount_point }}/software/{{ item.name }}"
+        dest: "{{ mount_point }}/software/11gR"
+        remote_src: yes
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      with_items:
+        - "{{ oracledb_artefacts }}"
+
+    - name: Unpack 11g database and 11g grid patches
+      unarchive:
+        src: "{{ item.dest_path|default(mount_point +'/software') + '/' + item.name }}"
+        dest: "{{ oracle_patch_installer_directory }}"
+        remote_src: yes
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      with_items:
+        - "{{ oracledb_patches }}"
+  
+  when: grid_version == '11g'
+
+- name: Unpack appropriate database software version and 19c grid software
+  block:
+
+    - name: Unpack 11g database software
+      unarchive:
+        src: "{{ mount_point }}/software/{{ item.name }}"
+        dest: "{{ mount_point }}/software/11gR"
+        remote_src: yes
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      with_items:
+        - "{{ oracledb_artefacts }}"
+      when: db_version == '11g'
+
+    - name: Unpack 11g database patches
+      unarchive:
+        src: "{{ item.dest_path|default(mount_point +'/software') + '/' + item.name }}"
+        dest: "{{ oracle_patch_installer_directory }}"
+        remote_src: yes
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      with_items:
+        - "{{ oracledb_patches }}"
+      when: db_version == '11g'
+
+    - block:
+
+        - name: Create 18c or 19c oracle database home directory
+          file:
+            path: "{{ item }}"
+            owner: "{{ rdbms_service_user.name }}"
+            group: "{{ rdbms_service_user.group }}"
+            mode: 0775
+            state: directory
+          with_items:
+            - "{{ oracle_database_oracle_home }}"
+
+        - name: Unpack 18c or 19c database software to defined oracle home
+          unarchive:
+            src: "{{ mount_point }}/software/{{ item.name }}"
+            dest: "{{ oracle_database_oracle_home }}"
+            remote_src: ye
+          become: yes
+          become_user: "{{ rdbms_service_user.name }}"
+          with_items:
+            - "{{ oracledb_artefacts }}"
+
+        - name: Unpack 18c or 19c database patches
+          unarchive:
+            src: "{{ item.dest_path|default(mount_point +'/software') + '/' + item.name }}"
+            dest: "{{ oracle_patch_installer_directory }}"
+            remote_src: yes
+          become: yes
+          become_user: "{{ rdbms_service_user.name }}"
+          with_items:
+            - "{{ oracledb_patches }}"
+          
+      when: db_version == '18c' or db_version == '19c'
+
+    - name: Create 19c grid database home directory
+      file:
+        path: "{{ item }}"
+        owner: "{{ rdbms_service_user.name }}"
+        group: "{{ rdbms_service_user.group }}"
+        mode: 0775
+        state: directory
+      with_items:
+        - "{{ oracle_grid_oracle_home }}"
+
+    - name: Unpack 19c grid software to defined oracle home
+      unarchive:
+        src: "{{ mount_point }}/software/{{ item.name }}"
+        dest: "{{ oracle_grid_oracle_home }}"
+        remote_src: yes
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      with_items:
+        - "{{ oraclegrid_artefacts }}"
+
+    - name: Unpack 19c grid patches
+      unarchive:
+        src: "{{ mount_point }}/software/{{ item.name }}"
+        dest: "{{ oracle_grid_installer_directory }}"
+        remote_src: yes
+      become: yes
+      become_user: "{{ rdbms_service_user.name }}"
+      with_items:
+        - "{{ oraclegrid_patches }}"
+  
+  when: grid_version == '19c'
