@@ -69,10 +69,10 @@
       register: command_result
       ignore_errors: yes
 
-    - name: Even though errors  ignore, check if setup was successful
+    - name: Even though errors are ignored but check if setup was successful
       fail:
-        msg: "Setup of grid was unsuccessul"
-      when: "'Successfully Setup Software' not in command_result.stdout_lines" #and 'Successfully applied the patch' not in command_result.stdout_lines"
+        msg: "Setup of grid was unsuccessful"
+      when: "'Successfully Setup Software' not in command_result.stdout" #and 'Successfully applied the patch' not in command_result.stdout_lines"
     
     - name: Remove hostname {{ ansible_hostname }} from /etc/hosts if required
       lineinfile:
