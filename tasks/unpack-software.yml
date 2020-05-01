@@ -93,20 +93,22 @@
       with_items:
         - "{{ oracle_grid_oracle_home }}"
 
-    - name: Unpack 19c grid software to defined oracle home
+    - name: Unpack 19c grid software to defined 19c grid oracle home
       unarchive:
         src: "{{ mount_point }}/software/{{ item.name }}"
         dest: "{{ oracle_grid_oracle_home }}"
+        creates: "{{ oracle_grid_oracle_home }}/gridSetup.sh"
         remote_src: yes
       become: yes
       become_user: "{{ rdbms_service_user.name }}"
       with_items:
         - "{{ oraclegrid_artefacts }}"
 
-    - name: Unpack 19c grid patches
+    - name: Unpack 19c grid patch
       unarchive:
         src: "{{ mount_point }}/software/{{ item.name }}"
         dest: "{{ oracle_grid_installer_directory }}"
+        creates: "{{ oracle_grid_installer_directory }}/PatchSearch.xml"
         remote_src: yes
       become: yes
       become_user: "{{ rdbms_service_user.name }}"

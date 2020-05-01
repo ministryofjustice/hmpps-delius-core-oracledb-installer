@@ -45,31 +45,42 @@
 
 - block:
 
-    - name: To avoid [FATAL] [INS-40954] error
+    - name: To avoid [FATAL] [INS-40954] error during 19g grid setup
       setup:
         filter: ansible_hostname
 
-    - name: Append the ansible hostname to 127.0.0.1 entry in /etc/hosts
+    - name: Check hostname {{ ansible_hostname }} already setup in /etc/hosts
+      shell: grep {{ ansible_hostname }} /etc/hosts
+      register: host_exists
+
+    - name: Append the hostname to 127.0.0.1 entry in /etc/hosts if required
       lineinfile:
         backrefs: yes
         path: /etc/hosts
         regexp: '^(127\.0\.0\.1 .*)'
-        line: '\1 {{ ansible_hostname }}'      
+        line: '\1 {{ ansible_hostname }}' 
+      when:  host_exists.rc != 0  
+      register: append_host  
 
     - name: Run grid setup and apply release update 30899722 for 19c grid
-      shell: "{{ oracle_grid_oracle_home }}/gridSetup.sh -silent -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_grid_response_file }}.rsp -applyRU {{ oracle_grid_installer_directory }}/30899722"
+      shell: "{{ oracle_grid_oracle_home }}/gridSetup.sh -silent -ignorePrereqFailure -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_grid_response_file }}.rsp -applyRU {{ oracle_grid_installer_directory }}/30899722"
       become: yes
       become_user:  "{{ rdbms_service_user.name }}"
       register: command_result
-      failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines and 'OPatchAuto successful.' not in command_result.stdout_lines"
       ignore_errors: yes
+
+    - name: Even though errors were ignored, check if setup was successful
+      fail:
+        msg: "Setup of grid was unsuccessul"
+      when: "'Successfully Setup Software.' not in command_result.stdout_lines and 'Successfully applied the patch.' not in command_result.stdout_lines"
     
-    - name: Remove ansible hostname from /etc/hosts
+    - name: Remove hostname {{ ansible_hostname }} from /etc/hosts if required
       lineinfile:
         backrefs: yes
         path: /etc/hosts
         regexp: '^(127\.0\.0\.1 .*) ({{ ansible_hostname }})$'
         line: '\1'
+      when:  append_host.changed
 
   when: grid_version == '19c'
 

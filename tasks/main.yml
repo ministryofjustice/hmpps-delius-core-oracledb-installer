@@ -4,35 +4,42 @@
   include_vars:
     file: main.yml
     name: weblogic_vars
+  tags: always
 
 - name: Set default fact grid version to 11g
   set_fact:
     grid_version: "11g"
   when: db_version is not defined
+  tags: always
 
 - name: Set fact grid version to 19c depending on db version to be installed
   set_fact:
     grid_version: "19c"
   when: (db_version is defined) and (db_version == '11g' or db_version == '18c' or db_version == '19c')
+  tags: always
 
 - name: Confirm we are installing on a blank slate
   include: check-installation.yml
   no_log: true
+  tags: always
   
 - block:
     - name: Define our service user
       set_fact:
         rdbms_service_user: "{{ system_users[0] }}"
+      tags: user
 
     - name: Create base directory structure
       include: create-directories.yml
+      tags: dir
 
     - name: Prepare our OS for the imminent arrival of OracleDB
       include: update-os-params.yml
+      tags: os
 
     - name: Download and unpack oracle
       include: install-oracledb.yml
 
-  when:
-    - grid_installed|default(false) == false
-    - oradb_installed|default(false) == false
+  #when:
+  #  - grid_installed|default(false) == false
+  #  - oradb_installed|default(false) == false

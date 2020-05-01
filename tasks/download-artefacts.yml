@@ -1,18 +1,18 @@
 ---
 
 - block:
-    - name: Set our download path
+    - name: Set our download path to destination paths 
       set_fact:
           download_path: "{{ [ artefact.dest_path, artefact.name ]|join('/') }}"
   when: artefact.dest_path|default(false)
 
 - block:
-    - name: Set our download path
+    - name: Set our download path to {{ mount_point }}/software
       set_fact:
           download_path: "{{ [mount_point, 'software',  artefact.name]|join('/')  }}"
   when: artefact.dest_path|default(false) == false
 
-- name: Print out our download path
+- name: Print out our download path for artefact
   debug:
     msg: "{{ download_path }}"
 
@@ -31,5 +31,3 @@
     group:  "{{ artefact.group|default(rdbms_service_user.group) }}"
     state: directory
     recurse: true
-
-

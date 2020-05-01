@@ -22,16 +22,6 @@
 - name: Install Oracle DB software
   include: install-database.yml
 
-- name: Install Oracle Secure Backup Web Service software
-  copy:
-    src: "{{ mount_point }}/software/{{ item.name }}"
-    dest: "{{ oracle_osbws_installer_directory }}/osbws_install.jar"
-    remote_src: yes
-  become: yes
-  become_user: "{{ rdbms_service_user.name }}"
-  with_items:
-    - "{{ oracledb_osbws }}"
-
 - name: Remove our downloaded archives
   file:
     path: "{{ artefact.dest|default( mount_point + '/software/' + artefact.name) }}"
@@ -39,7 +29,6 @@
   become: true
   ignore_errors: true
   with_items:
-    - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms + oracledb_osbws) }}"
+    - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms + oracledb_osbws) }} + {{ oraclegrid_artefacts | default([]) }} + {{ oraclegrid_patches | default([]) }}"
   loop_control:
     loop_var: artefact
-  tags: remove
