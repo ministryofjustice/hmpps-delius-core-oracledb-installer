@@ -63,7 +63,7 @@
       register: append_host  
 
     - name: Run grid setup and apply release update 30899722 for 19c grid
-      shell: "{{ oracle_grid_oracle_home }}/gridSetup.sh -silent -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_grid_response_file }}.rsp -applyRU {{ oracle_grid_installer_directory }}/30899722"
+      shell: "{{ oracle_grid_oracle_home }}/gridSetup.sh -silent ignorePrereqFailure -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_grid_response_file }}.rsp" #-applyRU {{ oracle_grid_installer_directory }}/30899722"
       become: yes
       become_user:  "{{ rdbms_service_user.name }}"
       register: command_result
@@ -72,7 +72,7 @@
     - name: Even though errors  ignore, check if setup was successful
       fail:
         msg: "Setup of grid was unsuccessul"
-      when: "'Successfully Setup Software.' not in command_result.stdout_lines and 'OPatchAuto successful.' not in command_result.stdout_lines"
+      when: "'Successfully Setup Software' not in command_result.stdout_lines" #and 'Successfully applied the patch' not in command_result.stdout_lines"
     
     - name: Remove hostname {{ ansible_hostname }} from /etc/hosts if required
       lineinfile:
@@ -84,12 +84,12 @@
 
   when: grid_version == '19c'
 
-#- name: run grid post-installation scripts as root
-#  become: yes
-#  become_user: root
-#  shell: "{{item}}"
-#  with_items:
-#    - "{{ oracle_database_inventory_location }}/orainstRoot.sh"
-#    - "{{ oracle_grid_oracle_home }}/root.sh"
-#  register: root_result
-#  failed_when: root_result.stderr_lines == "" and root_result.rc != 0
+- name: run grid post-installation scripts as root
+  become: yes
+  become_user: root
+  shell: "{{item}}"
+  with_items:
+    - "{{ oracle_database_inventory_location }}/orainstRoot.sh"
+    - "{{ oracle_grid_oracle_home }}/root.sh"
+  register: root_result
+  failed_when: root_result.stderr_lines == "" and root_result.rc != 0
