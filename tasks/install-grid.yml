@@ -62,7 +62,7 @@
       when: ansible_hostname not in host_file_content.stdout
       register: append_host  
 
-    - name: Run grid setup and apply release update 30899722 for 19c grid
+    - name: Run 19c grid setup 
       shell: "{{ oracle_grid_oracle_home }}/gridSetup.sh -silent -ignorePrereqFailure -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_grid_response_file }}.rsp" #-applyRU {{ oracle_grid_installer_directory }}/30899722"
       become: yes
       become_user:  "{{ rdbms_service_user.name }}"
@@ -72,8 +72,17 @@
     - name: Even though errors are ignored but check if setup was successful
       fail:
         msg: "Setup of grid was unsuccessful"
-      when: "'Successfully Setup Software' not in command_result.stdout" #and 'Successfully applied the patch' not in command_result.stdout_lines"
+      when: "'Successfully Setup Software' not in command_result.stdout" 
     
+    - name: Apply release update patch 30899722
+      shell: "{{ oracle_grid_oracle_home }}/OPatch/opatchauto apply {{ oracle_grid_installer_directory }}/30899722 -oh {{ oracle_grid_oracle_home }}"
+      register: patch_result
+
+    - name: Check if patch 30899722 applied correctly
+      fail:
+        msg: "Applying patch 30899722 unsuccessful"
+      when: "'OPatchauto session completed' not in patch_result.stdout" 
+
     - name: Remove hostname {{ ansible_hostname }} from /etc/hosts if required
       lineinfile:
         backrefs: yes
