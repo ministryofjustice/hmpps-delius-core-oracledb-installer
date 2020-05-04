@@ -32,3 +32,10 @@
     - "{{ artifacts_to_clean|default(oracledb_artefacts + oracledb_patches + oracledb_rpms + oracledb_osbws) }} + {{ oraclegrid_artefacts | default([]) }} + {{ oraclegrid_patches | default([]) }}"
   loop_control:
     loop_var: artefact
+
+- name: Create database version hidden file for bootstapping phase
+  lineinfile:
+    create: yes
+    path: "~/.db_version"
+    line: "{{ db_version }}"
+  when: (db_version is defined) and (db_version == '11g' or db_version == '18c' or db_version == '19c')
