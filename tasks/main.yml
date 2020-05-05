@@ -27,19 +27,16 @@
     - name: Define our service user
       set_fact:
         rdbms_service_user: "{{ system_users[0] }}"
-      tags: user
 
     - name: Create base directory structure
       include: create-directories.yml
-      tags: dir
 
     - name: Prepare our OS for the imminent arrival of OracleDB
       include: update-os-params.yml
-      tags: os
 
     - name: Download and unpack oracle
       include: install-oracledb.yml
 
-  #when:
-  #  - grid_installed|default(false) == false
-  #  - oradb_installed|default(false) == false
+  when:
+    - grid_installed|default(false) == false
+    - oradb_installed|default(false) == false
