@@ -67,3 +67,4 @@
     - "{{ mount_point }}"
     - "{{ oracle_patch_installer_directory }}"
     - "{{ oracle_osbws_installer_directory }}"
+    - "{{ oracle_grid_installer_directory }}"
