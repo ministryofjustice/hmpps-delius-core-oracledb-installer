@@ -1,0 +1,44 @@
+---
+
+- name: Set fact for 18c version of opatch utility
+  set_fact:
+    opatch_software: "{{ oracle_patch_installer_directory }}/p6880880_180000_Linux-x86-64.zip"
+  when: db_version is defined and db_version == '18c'
+
+- name: Set fact for 19c version of opatch utility
+  set_fact:
+    opatch_software: "{{ oracle_patch_installer_directory }}/p6880880_190000_Linux-x86-64.zip"
+  when: db_version is defined and db_version == '19c'
+
+- name: Backup Our OPatch Files
+  archive:
+    path: "{{ item }}/OPatch"
+    dest: "{{ item }}/OPatch_{{ansible_date_time.epoch }}.zip"
+    format: zip
+    owner: "{{ rdbms_service_user.name }}"
+    group: "{{ rdbms_service_user.group }}"
+    remote_src: yes
+  with_items:
+    - "{{ oracle_grid_oracle_home }}"
+    - "{{ oracle_database_oracle_home }}"
+
+- name:  Copy opatch utility to grid and database homes
+  copy:
+    src: "{{ opatch_software }}"
+    dest: "{{ item }}"
+    owner: "{{ rdbms_service_user.name }}"
+    group: "{{ rdbms_service_user.group }}"
+    remote_src: yes
+  with_items:
+    - "{{ oracle_grid_oracle_home }}"
+    - "{{ oracle_database_oracle_home }}"
+
+- name: Unarchive opatch utility to 19c grid and (18c or 19c database)
+  unarchive:
+    src: "{{ opatch_software }}"
+    dest: "{{ item }}"
+    owner: "{{ rdbms_service_user.name }}"
+    remote_src: yes
+  with_items:
+    - "{{ oracle_grid_oracle_home }}"
+    - "{{ oracle_database_oracle_home }}"
