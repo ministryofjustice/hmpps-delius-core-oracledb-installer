@@ -5,14 +5,13 @@
     src: "{{ role_path}}/templates/{{ oracle_database_response_file }}.rsp.j2"
     dest: "/tmp/{{ oracle_database_response_file }}.rsp"
 
-- name: run database installer
-  shell: "{{ oracle_database_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_database_response_file }}.rsp"
-  args:
-    creates: "{{ oracle_database_oracle_home }}/bin/sqlplus"
-  become: yes
-  become_user: oracle
-  register: command_result
-  failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
+- name: Oracle 11g Database Installation
+  include: install-11g-database.yml
+  when: db_version is not defined or (db_version is defined and db_version == '11g')
+
+- name: Oracle 18c Database Installation
+  include: install-18c-database.yml
+  when: (db_version is defined) and (db_version == '18c')
 
 - name: run post-installation scripts as root
   shell: "{{ item }}"
