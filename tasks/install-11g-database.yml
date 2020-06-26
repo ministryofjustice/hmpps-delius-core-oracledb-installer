@@ -1,0 +1,10 @@
+---
+
+- name: Run database installer for Oracle 11g
+  shell: "{{ oracle_database_installer_directory }}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -responseFile /tmp/{{ oracle_database_response_file }}.rsp"
+  args:
+    creates: "{{ oracle_database_oracle_home }}/bin/sqlplus"
+  become: yes
+  become_user: oracle
+  register: command_result
+  failed_when: "'Successfully Setup Software.' not in command_result.stdout_lines"
