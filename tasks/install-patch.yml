@@ -1,0 +1,17 @@
+---
+
+- name: Copy the PSU ocm response file to /tmp
+  copy:
+    src: "{{ role_path }}/files/ocm.rsp"
+    dest: "/tmp/ocm.rsp"
+    owner: "{{ rdbms_service_user.name }}"
+    group: "{{ rdbms_service_user.group }}"
+    force: no
+
+- name: Apply {{ patch_name | basename }}
+  shell: |
+    . ~/.bash_profile
+    {{ oracle_database_oracle_home }}/OPatch/opatch apply {{ oracle_patch_installer_directory }}/{{ patch_name }} -local -silent -ocmrf /tmp/ocm.rsp -oh {{ oracle_database_oracle_home }}
+  become: true
+  become_user: "{{ rdbms_service_user.name }}"
+  register: patch_result

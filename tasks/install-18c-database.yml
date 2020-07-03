@@ -1,0 +1,59 @@
+---
+
+- name: Amend the CVU file to allow pre-requisites to pass
+
+  block:
+
+    - name: Find the total memory
+      shell: grep MemTotal /proc/meminfo  | awk '{print int($2/1024)}'
+      register: memory_size
+
+    - name: Find the total swap size 
+      shell: grep SwapTotal /proc/meminfo  | awk '{print int($2/1024)}'
+      register: swap_size
+
+    - name: Change memory setting in cvu prereq xml file
+      lineinfile:
+        backrefs: yes
+        path: "{{ oracle_database_oracle_home }}/cv/cvdata/cvu_prereq.xml"
+        regexp: "^(\\s+<PHYSICAL_MEMORY VALUE=)\"\\d{4}\"( UNIT=\"MB\" SEVERITY=\"IGNORABLE\"/>)$"
+        line: '\1"{{ memory_size.stdout }}"\2'
+
+    - name: Change swap size multiplier to 1 in cvu prereq xml file
+      lineinfile:
+        backrefs: yes
+        path: "{{ oracle_database_oracle_home }}/cv/cvdata/cvu_prereq.xml"
+        regexp: "^(\\s+<STEP NAME=\"PHYSICAL_MEMORY\" ATLEAST=\"\\d{4}\" ATMOST=\"\\d{4}\" UNIT=\"MB\" MULTIPLE=)\"1\\.5\"(/>)$"
+        line: '\1"1"\2'
+      when: 
+        - memory_size.stdout | int >= 1536
+        - memory_size.stdout | int <= 2048
+
+    - name: Change swap size multiplier to 0.5 in cvu prereq xml file
+      lineinfile:
+        backrefs: yes
+        path: "{{ oracle_database_oracle_home }}/cv/cvdata/cvu_prereq.xml"
+        regexp: "^(\\s+<STEP NAME=\"PHYSICAL_MEMORY\" GREATER_THAN=\"\\d{4}\" UNIT=\"MB\" MULTIPLE=)\"1\"(/>)$"
+        line: '\1"0.5"\2'
+      when: 
+        - memory_size.stdout | int > 2048
+        - (swap_size.stdout | int) < (memory_size.stdout | int)
+
+- name: Run database installer for Oracle 18c
+  shell: "{{ oracle_database_oracle_home }}/runInstaller -silent -ignorePrereqFailure -waitForCompletion -noconfig -responseFile /tmp/{{ oracle_database_response_file }}.rsp"
+  become: yes
+  become_user: "{{ rdbms_service_user.name }}"
+  register: command_result
+  ignore_errors: yes
+  failed_when: "'Successfully Setup Software' not in command_result.stdout" 
+
+- name: Apply latest opatch utility to 19c grid and 18c database
+  include: install-opatch.yml
+
+- name: Apply latest Database and JavaVM Component Release Updates
+  include: install-patch.yml
+  vars:
+    patch_name: "{{ item }}"
+  with_items:
+    - "30783603/30872794" # Database Release Update 18.10.0.0.200414
+    - "30783603/30805598" # Oracle JavaVM Component Release Update 18.10.0.0.200414

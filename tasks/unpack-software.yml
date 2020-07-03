@@ -65,7 +65,8 @@
           unarchive:
             src: "{{ mount_point }}/software/{{ item.name }}"
             dest: "{{ oracle_database_oracle_home }}"
-            remote_src: ye
+            creates: "{{ oracle_database_oracle_home }}/root.sh"
+            remote_src: yes
           become: yes
           become_user: "{{ rdbms_service_user.name }}"
           with_items:
