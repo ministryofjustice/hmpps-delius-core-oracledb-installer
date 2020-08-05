@@ -15,6 +15,10 @@
   include: install-18c-database.yml
   when: (db_version is defined) and (db_version == '18c')
 
+- name: Oracle 19c Database Installation
+  include: install-19c-database.yml
+  when: (db_version is defined) and (db_version == '19c')
+
 - name: run post-installation scripts as root
   shell: "{{ item }}"
   become: yes
