@@ -44,6 +44,7 @@
     - { limit: 'hard', type: nproc, value: '{{ oracle_database_limits_hard_nproc }}' }
     - { limit: 'soft', type: stack, value: '{{ oracle_database_limits_soft_stack }}' }
     - { limit: 'hard', type: stack, value: '{{ oracle_database_limits_hard_stack }}' }
+    - { limit: 'hard', type: core, value: '{{ oracle_database_limits_hard_core }}' }
     - { limit: 'soft', type: memlock, value: '{{ system_memory_kb|int }}' }
     - { limit: 'hard', type: memlock, value: '{{ system_memory_kb|int }}' }
 
