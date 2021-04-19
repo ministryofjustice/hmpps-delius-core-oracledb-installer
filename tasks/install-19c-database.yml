@@ -55,5 +55,5 @@
   vars:
     patch_name: "{{ item }}"
   with_items:
-    - "31326362/31281355" # Database Release Update 19.8.0.0.200714
-    - "31326362/31219897" # Oracle JavaVM Component Release Update 19.8.0.0.200714
+    - "31720396/31771877" # Database Release Update 19.9.0.0.201020
+    - "31720396/31668882" # Oracle JavaVM Component Release Update 19.9.0.0.201020
